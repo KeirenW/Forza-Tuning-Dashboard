@@ -1,0 +1,73 @@
+/* Bootstrap core */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* ─── Accent palette ─────────────────────────────────────────── */
+:root {
+  --accent-orange: #f97316;
+  --accent-cyan:   #06b6d4;
+  --accent-lime:   #84cc16;
+
+  /* Override Bootstrap primary with orange */
+  --bs-primary:           var(--accent-orange);
+  --bs-primary-rgb:       249, 115, 22;
+  --bs-link-color:        var(--accent-cyan);
+  --bs-link-hover-color:  #38bdf8;
+}
+
+/* ─── Dark surface tweaks ────────────────────────────────────── */
+[data-bs-theme='dark'] {
+  --bs-body-bg:           #0f1117;
+  --bs-body-color:        #e2e8f0;
+  --bs-secondary-bg:      #1a1d27;
+  --bs-tertiary-bg:       #222534;
+  --bs-border-color:      #2d3148;
+  --bs-card-bg:           #1a1d27;
+}
+
+/* ─── Navbar ─────────────────────────────────────────────────── */
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--accent-orange) !important;
+}
+
+/* ─── Status badges ──────────────────────────────────────────── */
+.badge-pb       { background-color: var(--accent-lime);   color: #0f1117; }
+.badge-baseline { background-color: var(--accent-cyan);   color: #0f1117; }
+.badge-testing  { background-color: #6366f1;              color: #fff;    }
+.badge-retired  { background-color: #475569;              color: #cbd5e1; }
+
+/* ─── Timeline ───────────────────────────────────────────────── */
+.tune-timeline {
+  border-left: 2px solid var(--bs-border-color);
+  padding-left: 1.25rem;
+}
+
+.tune-timeline .timeline-node {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.tune-timeline .timeline-node::before {
+  content: '';
+  position: absolute;
+  left: -1.45rem;
+  top: 0.45rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bs-border-color);
+  border: 2px solid var(--bs-secondary-bg);
+}
+
+.tune-timeline .timeline-node.is-pb::before {
+  background: var(--accent-lime);
+}
+
+/* ─── Diff table ─────────────────────────────────────────────── */
+.diff-improved { color: var(--accent-lime); }
+.diff-worse    { color: #f87171; }
+
+/* ─── Lap delta headline ─────────────────────────────────────── */
+.lap-delta-faster { color: var(--accent-lime);   font-weight: 600; }
+.lap-delta-slower { color: #f87171;               font-weight: 600; }
