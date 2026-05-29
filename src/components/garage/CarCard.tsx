@@ -1,9 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import type { Car } from '../../types/car'
+import type { Tune } from '../../types/tune'
 import { TRACKS } from '../../types/track'
+import { formatLapTime } from '../../utils/laps'
 
 interface CarCardProps {
   car: Car
+  tunes: Tune[]
   onEdit: (car: Car) => void
   onDelete: (car: Car) => void
 }
@@ -18,7 +21,7 @@ const CLASS_COLOURS: Record<string, string> = {
   X: 'dark',
 }
 
-export default function CarCard({ car, onEdit, onDelete }: CarCardProps) {
+export default function CarCard({ car, tunes, onEdit, onDelete }: CarCardProps) {
   const navigate = useNavigate()
 
   function handleCardClick() {
@@ -84,16 +87,27 @@ export default function CarCard({ car, onEdit, onDelete }: CarCardProps) {
           <span className="badge text-bg-secondary">{car.drivetrain}</span>
         </div>
 
-        {/* Track PB summary — placeholder until Phase 5 */}
+        {/* Track PB summary */}
         <div className="mt-auto pt-2 border-top">
           <div className="small text-secondary mb-1">Best Laps</div>
           <div className="d-flex flex-column gap-1">
-            {TRACKS.map((track) => (
-              <div key={track} className="d-flex justify-content-between small">
-                <span className="text-secondary">{track}</span>
-                <span className="text-secondary fst-italic">—</span>
-              </div>
-            ))}
+            {TRACKS.map((track) => {
+              const bestMs = tunes
+                .flatMap((t) => t.lapRecords)
+                .filter((lr) => lr.track === track)
+                .reduce<number | null>((best, lr) =>
+                  best === null || lr.bestLapMs < best ? lr.bestLapMs : best
+                , null)
+
+              return (
+                <div key={track} className="d-flex justify-content-between small">
+                  <span className="text-secondary">{track}</span>
+                  <span className={bestMs !== null ? 'font-monospace' : 'text-secondary fst-italic'}>
+                    {bestMs !== null ? formatLapTime(bestMs) : '—'}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

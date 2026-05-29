@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { nanoid } from 'nanoid'
-import type { Tune } from '../types/tune'
+import type { Tune, TuneStatus } from '../types/tune'
 import { DEFAULT_TUNE_SETTINGS } from '../types/tune'
 
 interface TuneState {
@@ -11,6 +11,7 @@ interface TuneState {
   deleteTune: (id: string) => void
   deleteTunesByCarId: (carId: string) => void
   duplicateTune: (sourceId: string, newName: string) => Tune | null
+  bulkUpdateTuneStatuses: (updates: { id: string; status: TuneStatus }[]) => void
 }
 
 export const useTuneStore = create<TuneState>()(
@@ -54,6 +55,16 @@ export const useTuneStore = create<TuneState>()(
 
         set((state) => ({ tunes: [...state.tunes, newTune] }))
         return newTune
+      },
+
+      bulkUpdateTuneStatuses: (updates) => {
+        if (updates.length === 0) return
+        const statusMap = new Map(updates.map((u) => [u.id, u.status]))
+        set((state) => ({
+          tunes: state.tunes.map((t) =>
+            statusMap.has(t.id) ? { ...t, status: statusMap.get(t.id)! } : t
+          ),
+        }))
       },
     }),
     { name: 'tune-store' }

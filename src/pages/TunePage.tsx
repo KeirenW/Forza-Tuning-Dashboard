@@ -2,8 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useGarageStore } from '../store/garageStore'
 import { useTuneStore } from '../store/tuneStore'
-import type { TuneSettings } from '../types/tune'
+import type { LapRecord, TuneSettings } from '../types/tune'
 import { TRACKS } from '../types/track'
+import type { Track } from '../types/track'
+import { recalculatePBs, diffTuneStatuses } from '../utils/pb'
+import { formatLapTime } from '../utils/laps'
+import LapInput from '../components/shared/LapInput'
 import TyresSection from '../components/tune-editor/TyresSection'
 import GearingSection from '../components/tune-editor/GearingSection'
 import AlignmentSection from '../components/tune-editor/AlignmentSection'
@@ -19,6 +23,7 @@ interface DraftPayload {
   name: string
   notes: string
   settings: TuneSettings
+  lapRecords: LapRecord[]
 }
 
 function draftKey(tuneId: string) {
@@ -40,12 +45,15 @@ export default function TunePage() {
 
   const car = useGarageStore((s) => s.cars.find((c) => c.id === carId))
   const tune = useTuneStore((s) => s.tunes.find((t) => t.id === tuneId))
+  const allTunes = useTuneStore((s) => s.tunes)
   const updateTune = useTuneStore((s) => s.updateTune)
   const duplicateTune = useTuneStore((s) => s.duplicateTune)
+  const bulkUpdateTuneStatuses = useTuneStore((s) => s.bulkUpdateTuneStatuses)
 
   const [draftName, setDraftName] = useState('')
   const [draftNotes, setDraftNotes] = useState('')
   const [draftSettings, setDraftSettings] = useState<TuneSettings | null>(null)
+  const [draftLapRecords, setDraftLapRecords] = useState<LapRecord[]>([])
   const [showDraftBanner, setShowDraftBanner] = useState(false)
   const [pendingDraft, setPendingDraft] = useState<DraftPayload | null>(null)
 
@@ -65,6 +73,7 @@ export default function TunePage() {
         setDraftName(tune.name)
         setDraftNotes(tune.notes ?? '')
         setDraftSettings(JSON.parse(JSON.stringify(tune.settings)) as TuneSettings)
+        setDraftLapRecords([...tune.lapRecords])
         return
       } catch {
         localStorage.removeItem(key)
@@ -74,6 +83,7 @@ export default function TunePage() {
     setDraftName(tune.name)
     setDraftNotes(tune.notes ?? '')
     setDraftSettings(JSON.parse(JSON.stringify(tune.settings)) as TuneSettings)
+    setDraftLapRecords([...tune.lapRecords])
   }, [tune?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Autosave every 3s
@@ -86,6 +96,7 @@ export default function TunePage() {
         name: draftName,
         notes: draftNotes,
         settings: draftSettings,
+        lapRecords: draftLapRecords,
       }
       localStorage.setItem(draftKey(tuneId), JSON.stringify(payload))
     }, 3000)
@@ -93,15 +104,27 @@ export default function TunePage() {
     return () => {
       if (autosaveRef.current) clearInterval(autosaveRef.current)
     }
-  }, [tuneId, draftName, draftNotes, draftSettings])
+  }, [tuneId, draftName, draftNotes, draftSettings, draftLapRecords])
 
   function handleRestoreDraft() {
     if (!pendingDraft) return
     setDraftName(pendingDraft.name)
     setDraftNotes(pendingDraft.notes)
     setDraftSettings(pendingDraft.settings)
+    setDraftLapRecords(pendingDraft.lapRecords ?? [])
     setShowDraftBanner(false)
     setPendingDraft(null)
+  }
+
+  function handleLapCommit(track: Track, ms: number) {
+    setDraftLapRecords((prev) => {
+      const filtered = prev.filter((lr) => lr.track !== track)
+      return [...filtered, { track, bestLapMs: ms }]
+    })
+  }
+
+  function handleLapClear(track: Track) {
+    setDraftLapRecords((prev) => prev.filter((lr) => lr.track !== track))
   }
 
   function handleDiscardDraft() {
@@ -115,12 +138,29 @@ export default function TunePage() {
   }
 
   function handleSaveRevision() {
-    if (!tuneId || !draftSettings) return
+    if (!tuneId || !draftSettings || !tune) return
+
+    const lapsChanged =
+      JSON.stringify(draftLapRecords) !== JSON.stringify(tune.lapRecords)
+
     updateTune(tuneId, {
       name: draftName,
       notes: draftNotes || undefined,
       settings: draftSettings,
+      lapRecords: draftLapRecords,
     })
+
+    // Recalculate PBs only when lap records changed
+    if (lapsChanged && carId) {
+      // Build updated tunes array reflecting the just-saved lap records
+      const updatedTunes = allTunes.map((t) =>
+        t.id === tuneId ? { ...t, lapRecords: draftLapRecords } : t
+      )
+      const recalculated = recalculatePBs(carId, updatedTunes)
+      const statusChanges = diffTuneStatuses(allTunes, recalculated)
+      bulkUpdateTuneStatuses(statusChanges)
+    }
+
     localStorage.removeItem(draftKey(tuneId))
     navigate(`/car/${carId}`)
   }
@@ -252,17 +292,45 @@ export default function TunePage() {
         })}
       </div>
 
-      {/* Lap Records — placeholder until Phase 5 */}
+      {/* Lap Records */}
       <div className="card mb-4">
-        <div className="card-header">Lap Records</div>
+        <div className="card-header fw-semibold">Lap Records</div>
         <div className="card-body">
-          <div className="d-flex flex-column gap-2">
-            {TRACKS.map((track) => (
-              <div key={track} className="d-flex justify-content-between align-items-center">
-                <span className="text-secondary">{track}</span>
-                <span className="text-secondary fst-italic small">— (Phase 5)</span>
-              </div>
-            ))}
+          <div className="d-flex flex-column gap-3">
+            {TRACKS.map((track) => {
+              const record = draftLapRecords.find((lr) => lr.track === track)
+              const valueMs = record ? record.bestLapMs : null
+
+              // Find the car's current PB for this track (from saved tunes, excluding this one)
+              const carPbMs = allTunes
+                .filter((t) => t.carId === carId && t.id !== tuneId)
+                .flatMap((t) => t.lapRecords)
+                .filter((lr) => lr.track === track)
+                .reduce<number | null>((best, lr) =>
+                  best === null || lr.bestLapMs < best ? lr.bestLapMs : best
+                , null)
+
+              return (
+                <div key={track} className="row align-items-center g-2">
+                  <div className="col-3 col-md-2">
+                    <span className="fw-semibold small">{track}</span>
+                  </div>
+                  <div className="col-6 col-md-4">
+                    <LapInput
+                      valueMs={valueMs}
+                      onCommit={(ms) => handleLapCommit(track, ms)}
+                      onClear={() => handleLapClear(track)}
+                      currentPbMs={carPbMs}
+                    />
+                  </div>
+                  {carPbMs !== null && (
+                    <div className="col-auto text-secondary small">
+                      Car PB: <span className="font-monospace">{formatLapTime(carPbMs)}</span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { useGarageStore } from '../store/garageStore'
 import { useTuneStore } from '../store/tuneStore'
 import { DEFAULT_TUNE_SETTINGS, type Tune } from '../types/tune'
 import { TRACKS } from '../types/track'
+import { formatLapTime } from '../utils/laps'
 import TuneTimeline from '../components/timeline/TuneTimeline'
 import ConfirmDeleteModal from '../components/shared/ConfirmDeleteModal'
 
@@ -110,17 +111,24 @@ export default function CarPage() {
             </thead>
             <tbody>
               {TRACKS.map((track) => {
-                const pbTune = tunes.find(
-                  (t) =>
-                    t.status === 'pb' &&
-                    t.lapRecords.some((lr) => lr.track === track)
-                )
+                // Find the tune with the best lap for this track
+                let bestMs: number | null = null
+                let bestTune: Tune | null = null
+                for (const t of tunes) {
+                  const record = t.lapRecords.find((lr) => lr.track === track)
+                  if (record && (bestMs === null || record.bestLapMs < bestMs)) {
+                    bestMs = record.bestLapMs
+                    bestTune = t
+                  }
+                }
                 return (
                   <tr key={track}>
                     <td>{track}</td>
-                    <td className="text-secondary fst-italic">—</td>
+                    <td className={bestMs !== null ? 'font-monospace' : 'text-secondary fst-italic'}>
+                      {bestMs !== null ? formatLapTime(bestMs) : '—'}
+                    </td>
                     <td className="text-secondary fst-italic">
-                      {pbTune ? pbTune.name : '—'}
+                      {bestTune ? bestTune.name : '—'}
                     </td>
                   </tr>
                 )

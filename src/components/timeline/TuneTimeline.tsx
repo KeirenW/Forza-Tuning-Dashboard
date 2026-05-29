@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
 import type { Tune } from '../../types/tune'
 import StatusBadge from '../shared/StatusBadge'
+import { formatLapTime } from '../../utils/laps'
 
 interface TuneTimelineProps {
   tunes: Tune[]
@@ -53,34 +54,47 @@ export default function TuneTimeline({ tunes, carId, onDelete }: TuneTimelinePro
                 </div>
               </div>
 
-              {/* Right: lap placeholder + actions */}
-              <div className="d-flex align-items-center gap-2 flex-shrink-0">
-                <span className="text-secondary small fst-italic me-2">—</span>
+              {/* Right: lap records + actions */}
+              <div className="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                {/* Lap records for this tune */}
+                {tune.lapRecords.length > 0 ? (
+                  <div className="d-flex flex-column gap-1 text-end mb-1">
+                    {tune.lapRecords.map((lr) => (
+                      <span key={lr.track} className="small font-monospace text-secondary">
+                        {lr.track}: <span className="text-body">{formatLapTime(lr.bestLapMs)}</span>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-secondary small fst-italic me-2 mb-1">No laps</span>
+                )}
 
-                <Link
-                  to={`/car/${carId}/tune/${tune.id}`}
-                  className="btn btn-outline-secondary btn-sm"
-                >
-                  Open
-                </Link>
+                <div className="d-flex gap-2">
+                  <Link
+                    to={`/car/${carId}/tune/${tune.id}`}
+                    className="btn btn-outline-secondary btn-sm"
+                  >
+                    Open
+                  </Link>
 
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm"
-                  title="Compare this tune"
-                  onClick={() => navigate(`/car/${carId}/compare?tuneId=${tune.id}`)}
-                >
-                  Compare
-                </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    title="Compare this tune"
+                    onClick={() => navigate(`/car/${carId}/compare?tuneId=${tune.id}`)}
+                  >
+                    Compare
+                  </button>
 
-                <button
-                  type="button"
-                  className="btn btn-outline-danger btn-sm"
-                  title="Delete tune"
-                  onClick={() => onDelete(tune)}
-                >
-                  🗑
-                </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm"
+                    title="Delete tune"
+                    onClick={() => onDelete(tune)}
+                  >
+                    🗑
+                  </button>
+                </div>
               </div>
             </div>
           </div>

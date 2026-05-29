@@ -10,6 +10,7 @@ import type { Car } from '../types/car'
 export default function GaragePage() {
   const cars = useGarageStore((s) => s.cars)
   const deleteCar = useGarageStore((s) => s.deleteCar)
+  const allTunes = useTuneStore((s) => s.tunes)
   const deleteTunesByCarId = useTuneStore((s) => s.deleteTunesByCarId)
 
   const [createOpen, setCreateOpen] = useState(false)
@@ -55,6 +56,7 @@ export default function GaragePage() {
             <div key={car.id} className="col">
               <CarCard
                 car={car}
+                tunes={allTunes.filter((t) => t.carId === car.id)}
                 onEdit={(c) => setEditTarget(c)}
                 onDelete={(c) => setDeleteTarget(c)}
               />
