@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import type { DiffEntry } from '../../utils/comparison'
 import { formatDelta } from '../../utils/comparison'
 
@@ -50,8 +51,8 @@ export default function DiffTable({ entries, showAll }: Props) {
           const visibleRows = showAll ? rows : rows.filter(isChanged)
           if (visibleRows.length === 0) return null
           return (
-            <>
-              <tr key={`section-${section}`} className="table-secondary">
+            <Fragment key={section}>
+              <tr className="table-secondary">
                 <td colSpan={4} className="fw-semibold text-uppercase small" style={{ letterSpacing: '0.06em' }}>
                   {section}
                 </td>
@@ -67,7 +68,7 @@ export default function DiffTable({ entries, showAll }: Props) {
                   <DeltaCell entry={entry} />
                 </tr>
               ))}
-            </>
+            </Fragment>
           )
         })}
       </tbody>

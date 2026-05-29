@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { nanoid } from 'nanoid'
+import { useShallow } from 'zustand/react/shallow'
 import { useGarageStore } from '../store/garageStore'
 import { useTuneStore } from '../store/tuneStore'
 import { useToastStore } from '../store/toastStore'
@@ -15,7 +16,7 @@ export default function CarPage() {
   const navigate = useNavigate()
 
   const car = useGarageStore((s) => s.cars.find((c) => c.id === carId))
-  const tunes = useTuneStore((s) => s.tunes.filter((t) => t.carId === carId))
+  const tunes = useTuneStore(useShallow((s) => s.tunes.filter((t) => t.carId === carId)))
   const addTune = useTuneStore((s) => s.addTune)
   const deleteTune = useTuneStore((s) => s.deleteTune)
   const addToast = useToastStore((s) => s.addToast)

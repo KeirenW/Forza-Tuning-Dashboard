@@ -32,6 +32,7 @@ export default function LapInput({ valueMs, onCommit, onClear, currentPbMs }: La
 
     if (!isValidLapTime(trimmed)) {
       setError(true)
+      setInputValue(valueMs !== null ? formatLapTime(valueMs) : '')
       return
     }
 

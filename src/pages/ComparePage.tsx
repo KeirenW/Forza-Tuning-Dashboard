@@ -104,8 +104,9 @@ export default function ComparePage() {
       {/* Tune pickers */}
       <div className="row g-3 mb-4">
         <div className="col-sm-6">
-          <label className="form-label fw-semibold">Tune A</label>
+          <label className="form-label fw-semibold" htmlFor="tune-a-select">Tune A</label>
           <select
+            id="tune-a-select"
             className="form-select"
             value={tuneAId ?? ''}
             onChange={e => handlePickA(e.target.value)}
@@ -117,8 +118,9 @@ export default function ComparePage() {
           </select>
         </div>
         <div className="col-sm-6">
-          <label className="form-label fw-semibold">Tune B <span className="text-secondary fw-normal">(Reference)</span></label>
+          <label className="form-label fw-semibold" htmlFor="tune-b-select">Tune B <span className="text-secondary fw-normal">(Reference)</span></label>
           <select
+            id="tune-b-select"
             className="form-select"
             value={tuneBId ?? ''}
             onChange={e => handlePickB(e.target.value)}

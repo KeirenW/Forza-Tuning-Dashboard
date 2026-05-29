@@ -33,7 +33,10 @@ export default function NumericField({
           step={step}
           min={min}
           max={max}
-          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+          onChange={(e) => {
+            const parsed = parseFloat(e.target.value)
+            if (!Number.isNaN(parsed)) onChange(parsed)
+          }}
         />
         {unit && <span className="input-group-text">{unit}</span>}
       </div>
