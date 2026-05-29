@@ -7,6 +7,7 @@ interface GarageState {
   addCar: (car: Car) => void
   updateCar: (id: string, updates: Partial<Omit<Car, 'id' | 'createdAt'>>) => void
   deleteCar: (id: string) => void
+  setCars: (cars: Car[]) => void
 }
 
 export const useGarageStore = create<GarageState>()(
@@ -24,6 +25,8 @@ export const useGarageStore = create<GarageState>()(
 
       deleteCar: (id) =>
         set((state) => ({ cars: state.cars.filter((c) => c.id !== id) })),
+
+      setCars: (cars) => set({ cars }),
     }),
     { name: 'garage-store' }
   )

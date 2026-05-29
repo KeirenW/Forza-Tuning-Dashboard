@@ -184,7 +184,9 @@ export default function ComparePage() {
           {diffEntries.length === 0 || (!showAll && diffEntries.every(e => e.current === e.reference)) ? (
             <p className="text-secondary">No differences found.</p>
           ) : (
-            <DiffTable entries={diffEntries} showAll={showAll} />
+            <div className="table-scroll-wrapper">
+              <DiffTable entries={diffEntries} showAll={showAll} />
+            </div>
           )}
         </>
       ) : (

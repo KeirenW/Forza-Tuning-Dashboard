@@ -71,3 +71,6 @@
 /* ─── Lap delta headline ─────────────────────────────────────── */
 .lap-delta-faster { color: var(--accent-lime);   font-weight: 600; }
 .lap-delta-slower { color: #f87171;               font-weight: 600; }
+
+/* ─── Responsive helpers ─────────────────────────────────────── */
+.table-scroll-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }

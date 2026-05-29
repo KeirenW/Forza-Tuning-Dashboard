@@ -12,6 +12,7 @@ interface TuneState {
   deleteTunesByCarId: (carId: string) => void
   duplicateTune: (sourceId: string, newName: string) => Tune | null
   bulkUpdateTuneStatuses: (updates: { id: string; status: TuneStatus }[]) => void
+  setTunes: (tunes: Tune[]) => void
 }
 
 export const useTuneStore = create<TuneState>()(
@@ -66,6 +67,8 @@ export const useTuneStore = create<TuneState>()(
           ),
         }))
       },
+
+      setTunes: (tunes) => set({ tunes }),
     }),
     { name: 'tune-store' }
   )

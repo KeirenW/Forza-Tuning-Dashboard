@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useGarageStore } from '../store/garageStore'
 import { useTuneStore } from '../store/tuneStore'
+import { useToastStore } from '../store/toastStore'
 import type { LapRecord, TuneSettings } from '../types/tune'
 import { TRACKS } from '../types/track'
 import type { Track } from '../types/track'
@@ -49,6 +50,7 @@ export default function TunePage() {
   const updateTune = useTuneStore((s) => s.updateTune)
   const duplicateTune = useTuneStore((s) => s.duplicateTune)
   const bulkUpdateTuneStatuses = useTuneStore((s) => s.bulkUpdateTuneStatuses)
+  const addToast = useToastStore((s) => s.addToast)
 
   const [draftName, setDraftName] = useState('')
   const [draftNotes, setDraftNotes] = useState('')
@@ -114,6 +116,7 @@ export default function TunePage() {
     setDraftLapRecords(pendingDraft.lapRecords ?? [])
     setShowDraftBanner(false)
     setPendingDraft(null)
+    addToast('Draft restored', 'info')
   }
 
   function handleLapCommit(track: Track, ms: number) {
@@ -162,6 +165,7 @@ export default function TunePage() {
     }
 
     localStorage.removeItem(draftKey(tuneId))
+    addToast('Tune saved', 'success')
     navigate(`/car/${carId}`)
   }
 

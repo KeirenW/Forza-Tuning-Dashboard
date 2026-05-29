@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { nanoid } from 'nanoid'
 import { useGarageStore } from '../store/garageStore'
 import { useTuneStore } from '../store/tuneStore'
+import { useToastStore } from '../store/toastStore'
 import { DEFAULT_TUNE_SETTINGS, type Tune } from '../types/tune'
 import { TRACKS } from '../types/track'
 import { formatLapTime } from '../utils/laps'
@@ -17,6 +18,7 @@ export default function CarPage() {
   const tunes = useTuneStore((s) => s.tunes.filter((t) => t.carId === carId))
   const addTune = useTuneStore((s) => s.addTune)
   const deleteTune = useTuneStore((s) => s.deleteTune)
+  const addToast = useToastStore((s) => s.addToast)
 
   const [deleteTuneTarget, setDeleteTuneTarget] = useState<Tune | null>(null)
 
@@ -50,6 +52,7 @@ export default function CarPage() {
 
   function handleConfirmDeleteTune() {
     if (!deleteTuneTarget) return
+    addToast(`"${deleteTuneTarget.name}" deleted`, 'success')
     deleteTune(deleteTuneTarget.id)
     setDeleteTuneTarget(null)
   }
@@ -101,6 +104,7 @@ export default function CarPage() {
           Track PBs
         </div>
         <div className="card-body p-0">
+          <div className="table-scroll-wrapper">
           <table className="table table-sm table-bordered mb-0">
             <thead>
               <tr>
@@ -135,6 +139,7 @@ export default function CarPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
 

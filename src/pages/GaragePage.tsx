@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useGarageStore } from '../store/garageStore'
 import { useTuneStore } from '../store/tuneStore'
+import { useToastStore } from '../store/toastStore'
 import CarCard from '../components/garage/CarCard'
 import CreateCarModal from '../components/garage/CreateCarModal'
 import EditCarModal from '../components/garage/EditCarModal'
@@ -12,6 +13,7 @@ export default function GaragePage() {
   const deleteCar = useGarageStore((s) => s.deleteCar)
   const allTunes = useTuneStore((s) => s.tunes)
   const deleteTunesByCarId = useTuneStore((s) => s.deleteTunesByCarId)
+  const addToast = useToastStore((s) => s.addToast)
 
   const [createOpen, setCreateOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Car | null>(null)
@@ -21,6 +23,7 @@ export default function GaragePage() {
     if (!deleteTarget) return
     deleteTunesByCarId(deleteTarget.id)
     deleteCar(deleteTarget.id)
+    addToast(`${deleteTarget.manufacturer} ${deleteTarget.model} deleted`, 'success')
     setDeleteTarget(null)
   }
 
