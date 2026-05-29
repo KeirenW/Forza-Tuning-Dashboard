@@ -10,6 +10,7 @@ import AlignmentSection from '../components/tune-editor/AlignmentSection'
 import AntiRollBarsSection from '../components/tune-editor/AntiRollBarsSection'
 import SpringsSection from '../components/tune-editor/SpringsSection'
 import DampingSection from '../components/tune-editor/DampingSection'
+import StatusBadge from '../components/shared/StatusBadge'
 import AeroSection from '../components/tune-editor/AeroSection'
 import BrakesSection from '../components/tune-editor/BrakesSection'
 import DifferentialSection from '../components/tune-editor/DifferentialSection'
@@ -268,7 +269,7 @@ export default function TunePage() {
 
       {/* Status */}
       <div className="text-secondary small">
-        Status: <span className="badge text-bg-secondary">{tune.status}</span>
+        Status: <StatusBadge status={tune.status} />
         <span className="ms-3">Created: {new Date(tune.createdAt).toLocaleDateString()}</span>
       </div>
     </div>
